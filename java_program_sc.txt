@@ -1,0 +1,307 @@
+//********************************************************
+//* Name: Christopher Marquart                           *
+//* Date: April 8, 2021                                  *
+//* Purpose: To implement a Connect Four game in Java.   *
+//********************************************************
+
+package connect_four;
+
+// imports Scanner for user input
+import java.util.Scanner;
+
+// creates global variables for names to be inherited by all methods
+public class Connect_four {
+    static String redName;
+    static String yellowName;
+    
+    // method for collecting user names
+    public void playerNames() 
+    {
+        // creates a scanner to read keyboard input
+        Scanner myScanner = new Scanner(System.in);
+        
+        // prompts RED player for his/her name and saves a modified version
+        try{
+            System.out.println("Player RED's name: ");
+            redName = (myScanner.nextLine()).toUpperCase();
+            redName = redName.substring(0,3);
+        }
+        
+        // displays error message and prompts RED to try again
+        catch (Throwable exc) {
+            System.out.println("Please enter a name that is at least three characters.");
+            redName = (myScanner.nextLine()).toUpperCase();
+            redName = redName.substring(0,3);
+        }
+
+        // prompts YELLOW player for his/her name
+        try{
+            System.out.println("Player YELLOW's name: ");
+            yellowName = (myScanner.nextLine()).toUpperCase();
+            yellowName = yellowName.substring(0,3);
+        }
+        
+        // prompts YELLOW for new name if prior entry was invalid
+        catch (Throwable exc) {
+            System.out.println("Please enter a name that is at least three characters.");
+            yellowName = (myScanner.nextLine()).toUpperCase();
+            yellowName = yellowName.substring(0,3);
+        }
+    }
+    
+    // creates an empty board
+    public static String[][] createBoard()
+    {
+        // playable area of board is 7x6, but 7x15 for the actual area
+	String[][] f = new String[7][15];
+	for (int i =0;i<f.length;i++)
+        {
+	    for (int j =0;j<f[i].length;j++)
+	    {
+                /* even elements will become pipe symbols to emulate the
+                   appearence of a real board */
+	        if (j% 2 == 0) f[i][j] ="|";
+                
+                /* odd elements will be initialized with blanks spaces for
+                   the pieces */
+	        else f[i][j] = "_";
+                
+                /* bottom row will be initialized with blank spaces to create
+                   a gap between the board and the instructions */
+	        if (i==6) f[i][j]= " ";
+	    }
+	}
+	return f;
+    }
+    
+    // displays the board created by the previous method
+    public void displayBoard(String[][] f)
+    {
+        // iterates across entire array and displays each element to user
+        for (int i = 0; i < f.length; i++)
+	{
+	    for (int j = 0; j < f[i].length; j++)
+	    {
+                System.out.print(f[i][j]);
+	    }
+	    System.out.println();
+	}
+    }
+	   
+    // method for red player's turn
+    public void redTurn(String[][] f)
+    {
+        try {
+            System.out.println(redName + "'s turn: ");
+            
+            // creates a new scanner for reading keyboard input
+            Scanner scan = new Scanner (System.in);
+            
+            /* modifies the user's input to the computer so as to make 0-6 on the
+               keyboard represent 1, 3, 5, 7, 9, 11, 13 to the computer */
+            int k = 2*scan.nextInt()+1;
+            for (int i = 5; i >= 0; i--)
+            {
+                /* if the spot where RED wants a piece is clear, then it will
+                be filled in with "R" and the turn will end */
+                if (f[i][k] == "_")
+                {
+                    f[i][k] = "R";
+                    break;
+                }
+	    }
+	}
+        
+        /* if RED player enters an invalid move, then he/she will be prompted
+           again */
+        catch (Throwable exc) {
+            displayBoard(f);
+            System.out.println("{Please enter a valid move.}");
+            redTurn(f);
+        }
+    }
+    
+    // method for YELLOW player's turn
+    public void yellowTurn(String[][] f)
+    {
+        try {
+            System.out.println(yellowName + "'s turn: ");
+            
+            // creates a new scanner to read keyboard input
+            Scanner scan = new Scanner (System.in);
+            
+            // implements same logic as previous method
+            int c = 2*scan.nextInt()+1;
+            for (int i = 5; i >= 0; i--)
+            {
+                if (f[i][c] == "_")
+                {
+                    f[i][c] = "Y";
+                    break;
+                }
+            }
+        }
+        
+        /* if YELLOW player enters an invalid position, then the turn will not
+           count and he/she will be prompted again */
+        catch (Throwable exc) {
+            displayBoard(f);
+            System.out.println("{Please enter a valid move.}");
+            yellowTurn(f);
+        }
+    }
+
+
+    // method for checking for ties, losses, or wins
+    public static String checkWinner(String[][] f)
+    {
+        /* checks to see if four pieces of the same color have been 
+        connected horizontally anywhere on the boatd */
+        for (int i =0;i<6;i++)
+	{
+            for (int j=0;j<7;j+=2)
+            {
+                if ((f[i][j+1] != "_")
+                && (f[i][j+3] != "_")
+                && (f[i][j+5] != "_")
+                && (f[i][j+7] != "_")
+                && ((f[i][j+1] == f[i][j+3])
+                && (f[i][j+3] == f[i][j+5])
+                && (f[i][j+5] == f[i][j+7])))
+                return f[i][j+1]; 
+            }
+        }
+        
+        /* checks to see if four of the same color are connected vertically
+           anywhere on the board */
+        for (int i=1;i<15;i+=2)
+        {
+            for (int j =0;j<3;j++)
+            {
+                if((f[j][i] != "_")
+                && (f[j+1][i] != "_")
+                && (f[j+2][i] != "_")
+                && (f[j+3][i] != "_")
+                && ((f[j][i] == f[j+1][i])
+                && (f[j+1][i] == f[j+2][i])
+                && (f[j+2][i] == f[j+3][i])))
+                return f[j][i]; 
+            } 
+        }
+
+        // checks for a top-left-to-bottom-right diagonal win
+        for (int i=0;i<3;i++)
+        {
+            for (int j=1;j<9;j+=2)
+            {
+                if((f[i][j] != "_")
+                && (f[i+1][j+2] != "_")
+                && (f[i+2][j+4] != "_")
+                && (f[i+3][j+6] != "_")
+                && ((f[i][j] == f[i+1][j+2])
+                && (f[i+1][j+2] == f[i+2][j+4])
+                && (f[i+2][j+4] == f[i+3][j+6])))
+                return f[i][j]; 
+            } 
+        }
+
+        // bottom-left to top-right diagional win
+        for (int i=0;i<3;i++)
+        {
+            for (int j=7;j<15;j+=2)
+            {
+                if((f[i][j] != "_")
+                    && (f[i+1][j-2] != "_")
+                    && (f[i+2][j-4] != "_")
+                    && (f[i+3][j-6] != "_")
+                    && ((f[i][j] == f[i+1][j-2])
+                    && (f[i+1][j-2] == f[i+2][j-4])
+                    && (f[i+2][j-4] == f[i+3][j-6])))
+                return f[i][j]; 
+             } 
+        }
+        
+        // iterates across top row of board to see if any spots are still open
+        for (int i=0;i<3;i++)
+        {
+            for (int j=7;j<15;j+=2)
+            {
+                if((f[0][1] != "_")
+                    && (f[0][3] != "_")
+                    && (f[0][5] != "_")
+                    && (f[0][7] != "_")
+                    && ((f[0][9] != "_")
+                    && (f[0][11] != "_")
+                    && (f[0][13] != "_")))
+                    
+                // if no spots are blank, then a "tie" will be returned
+                return "tie"; 
+             } 
+        }
+        // if the game hasn't ended yet, this method will return "null"
+        return null; 
+    }
+
+    // opens main method
+    public static void main(String[] args) 
+    {
+        // creates a new instance of the Connect_four class called "game"
+        Connect_four game;
+        game = new Connect_four();
+        
+        // calls method to prompt the players for their names
+        game.playerNames();
+        
+        // creates a 2d array of type string
+        String[][] f = createBoard();
+        
+        /* starts a loop that will be constantly evaluating and refreshing the
+          state of the board */
+	boolean loop = true;
+	int count = 0;
+        
+        // displays the board
+	game.displayBoard(f); 
+        
+        // displays instructions at the start of the game
+        System.out.println("Type 0-6 after the semicolon to place your disk. \n");
+        
+        while(loop)
+	{
+            // red player gets the first turn and all subsequent even turns
+            if (count % 2 == 0) 
+                game.redTurn(f);
+	    else 
+                
+                // yellow player gets the odd turns
+                game.yellowTurn(f);
+            
+	    count++;
+            
+            // displays the new state of the board following each turn
+	    game.displayBoard(f);
+            try {
+                
+                /* if the checkWinner method has returned some kind of ouput,
+                   this conditional statement will display a message corresponding
+                   to the type of return, and then terminate the loop */
+                if (game.checkWinner(f) != null)
+                {
+                    if (game.checkWinner(f) == "R")
+                        System.out.println(redName + " wins!!!");
+                    else if (game.checkWinner(f)== "Y")
+                        System.out.println(yellowName + " wins!!!");
+                    else if (game.checkWinner(f) == "tie")
+                        System.out.println("It's a tie...");
+                    loop = false;
+                }
+            }
+            
+            // displays an error and terminates the program if an error occurs
+            catch (Throwable exc) {
+                System.out.println("An error occured :(");
+                return;
+            }
+	}
+    }
+}
